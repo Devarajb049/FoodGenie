@@ -1,0 +1,23 @@
+# Ignore documentation output directory and files
+/documentation/
+*.docx
+*.pdf
+~$*
+
+# Node dependencies
+node_modules/
+
+# Local configurations and environment variables
+backend/config/config.env
+.env
+
+# Python build and cache artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
