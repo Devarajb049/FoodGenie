@@ -1,9 +1,13 @@
+const dotenv = require("dotenv");
+
+// Setting up config file
+dotenv.config({ path: "./config/config.env" });
+
 const dns = require("dns");
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const app = require("./app");
 const connectDatabase = require("./config/database");
-const dotenv = require("dotenv");
 
 // Handle Uncaught Exceptions
 process.on("uncaughtException", (err) => {
@@ -12,15 +16,13 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
-// Setting up config file
-dotenv.config({ path: "./config/config.env" });
-
 // Connecting to database
 connectDatabase();
 
-const server = app.listen(process.env.PORT, () => {
+const PORT = process.env.PORT || 8080;
+const server = app.listen(PORT, () => {
   console.log(
-    `Server started on PORT: ${process.env.PORT} in ${process.env.NODE_ENV} mode.`
+    `Server started on PORT: ${PORT} in ${process.env.NODE_ENV || "DEVELOPMENT"} mode.`
   );
 });
 
