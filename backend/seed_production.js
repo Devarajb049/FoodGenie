@@ -2,10 +2,13 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const dns = require("dns");
 
+const dotenv = require("dotenv");
+dotenv.config({ path: "./config/config.env" });
+
 // Override DNS server for MongoDB Atlas SRV lookup in sandbox environment
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
-const DB_URI = "mongodb+srv://dbuser:sLttdrvqPR4Jr5bR@foodapp.skkhvgp.mongodb.net/foodapp?retryWrites=true&w=majority";
+const DB_URI = process.env.DB_URI || "mongodb+srv://dbuser:Deva11111@foodapp.skkhvgp.mongodb.net/foodgenie?retryWrites=true&w=majority";
 
 // Import Models
 const Restaurant = require("./models/restaurant");
