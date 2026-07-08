@@ -50,7 +50,7 @@ async function addItemToCart(req, res) {
     const updatedCart = await Cart.findOne({ user: userId })
       .populate({
         path: "items.foodItem",
-        select: "name price images",
+        select: "name price images stock",
       })
       .populate({
         path: "restaurant",
@@ -88,7 +88,7 @@ async function updateCartItemQuantity(req, res) {
     const updatedCart = await Cart.findOne({ user: userId })
       .populate({
         path: "items.foodItem",
-        select: "name price images",
+        select: "name price images stock",
       })
       .populate({
         path: "restaurant",
@@ -134,7 +134,7 @@ async function deleteCartItem(req, res) {
       const updatedCart = await Cart.findOne({ user: userId })
         .populate({
           path: "items.foodItem",
-          select: "name price images",
+          select: "name price images stock",
         })
         .populate({
           path: "restaurant",
@@ -156,7 +156,7 @@ async function getCartItem(req, res) {
     const cart = await Cart.findOne({ user: userId })
       .populate({
         path: "items.foodItem",
-        select: "name price images",
+        select: "name price images stock",
       })
       .populate({
         path: "restaurant",
