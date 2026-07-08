@@ -106,7 +106,8 @@ async function updateCartItemQuantity(req, res) {
 //Delete cart
 
 async function deleteCartItem(req, res) {
-  const { userId, foodItemId } = req.body;
+  const userId = req.body.userId || req.query.userId;
+  const foodItemId = req.body.foodItemId || req.query.foodItemId;
 
   try {
     let cart = await Cart.findOne({ user: userId });
@@ -115,7 +116,7 @@ async function deleteCartItem(req, res) {
     }
 
     const itemIndex = cart.items.findIndex(
-      (item) => item.foodItem.toString() === foodItemId
+      (item) => item.foodItem && item.foodItem.toString() === foodItemId
     );
     if (itemIndex === -1) {
       return res.status(404).json({ message: "Food item not found in cart" });

@@ -71,6 +71,7 @@ export const removeItemFromCart = (foodItemId) => async (dispatch, getState) => 
         const { user } = getState().user;
 
         const { data } = await api.delete("/v1/eats/cart/delete-cart-item", {
+            params: { userId: user._id, foodItemId },
             data: { userId: user._id, foodItemId }
         })
 
