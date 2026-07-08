@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { clearCart } from "../../redux/slices/cartSlice";
+import { createOrder } from "../../redux/actions/orderActions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faShoppingBag } from "@fortawesome/free-solid-svg-icons";
 
@@ -11,9 +12,12 @@ const OrderSuccess = () => {
   const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
+    if (sessionId && sessionId.startsWith("cs_")) {
+      dispatch(createOrder(sessionId));
+    }
     // Clear cart in Redux state upon successful checkout
     dispatch(clearCart());
-  }, [dispatch]);
+  }, [dispatch, sessionId]);
 
   return (
     <div className="container py-5 text-center d-flex flex-column align-items-center justify-content-center" style={{ minHeight: "75vh" }}>

@@ -14,10 +14,27 @@ const Cart = () => {
   const { cartItems, loading, restaurant } = useSelector((state) => state.cart || { cartItems: [], loading: false });
   const { isAuthenticated } = useSelector((state) => state.user || { isAuthenticated: false });
 
-  const [paymentMethod, setPaymentMethod] = React.useState("card");
+  const [paymentMethod, setPaymentMethod] = React.useState("upi");
   const [upiId, setUpiId] = React.useState("");
+  const [address, setAddress] = React.useState("");
+  const [city, setCity] = React.useState("");
+  const [postalCode, setPostalCode] = React.useState("");
+  const [phoneNo, setPhoneNo] = React.useState("");
   const [showUpiModal, setShowUpiModal] = React.useState(false);
   const [payingUpi, setPayingUpi] = React.useState(false);
+
+  const inputStyle = {
+    width: "100%",
+    padding: "10px 14px",
+    marginBottom: "10px",
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    borderRadius: "12px",
+    color: "#F1F5F9",
+    fontSize: "0.85rem",
+    outline: "none",
+    textAlign: "left"
+  };
 
   useEffect(() => {
     if (isAuthenticated) dispatch(fetchCartItems());
@@ -43,31 +60,39 @@ const Cart = () => {
   const gst = parseFloat((subTotal * 0.05).toFixed(2));
   const finalTotal = subTotal + deliveryFee + gst;
 
-  const checkoutHandler = async () => {
-    if (paymentMethod === "card") {
-      try {
-        toast.info("Redirecting to Stripe payment...");
-        const { data } = await api.post("/v1/payment/process", { items: cartItems });
-        if (data?.url) window.location.href = data.url;
-        else toast.error("Failed to generate payment session.");
-      } catch (err) {
-        toast.error(err.response?.data?.message || err.message || "Checkout failed");
-      }
-    } else {
-      setShowUpiModal(true);
-    }
+  const checkoutHandler = () => {
+    setShowUpiModal(true);
   };
 
-  const handleUpiPaymentSubmit = (e) => {
+  const handleUpiPaymentSubmit = async (e) => {
     e.preventDefault();
     if (!upiId) { toast.error("Please enter a valid UPI ID"); return; }
+    if (!address || !city || !postalCode || !phoneNo) {
+      toast.error("Please fill in all delivery details");
+      return;
+    }
+
     setPayingUpi(true);
-    setTimeout(() => {
+    try {
+      const deliveryInfo = { address, city, postalCode, phoneNo, country: "IN" };
+      const { data } = await api.post("/v1/eats/orders/new", {
+        deliveryInfo,
+        upi_transaction_id: upiId
+      });
+
+      if (data?.success) {
+        toast.success("Order Placed Successfully!");
+        dispatch(clearCart());
+        window.location.href = `/success?session_id=${data.order.paymentInfo.id}`;
+      } else {
+        toast.error("Failed to place order. Please try again.");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || "Failed to create order");
+    } finally {
       setPayingUpi(false);
       setShowUpiModal(false);
-      toast.success("Payment Received Successfully!");
-      window.location.href = `/success?session_id=upi_${Date.now()}`;
-    }, 2500);
+    }
   };
 
   if (!isAuthenticated) {
@@ -300,7 +325,6 @@ const Cart = () => {
                   </h5>
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "24px" }}>
                     {[
-                      { value: "card", icon: faCreditCard, title: "Credit / Debit Card", sub: "Secure via Stripe" },
                       { value: "upi", icon: faMobileAlt, title: "UPI", sub: "GPay / PhonePe / BHIM" },
                     ].map(({ value, icon, title, sub }) => (
                       <label key={value} onClick={() => setPaymentMethod(value)} style={{
@@ -426,15 +450,53 @@ const Cart = () => {
             </a>
 
             <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}>
-              <p style={{ fontSize: "0.78rem", color: "#64748B", marginBottom: "12px" }}>
-                After paying, enter your UPI ID to confirm:
-              </p>
               <form onSubmit={handleUpiPaymentSubmit}>
+                <p style={{ fontSize: "0.78rem", color: "#94A3B8", marginBottom: "8px", textAlign: "left", fontWeight: "700" }}>
+                  Delivery Details:
+                </p>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Delivery Address"
+                  required
+                  style={inputStyle}
+                />
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="City"
+                    required
+                    style={{ ...inputStyle, flex: 1 }}
+                  />
+                  <input
+                    type="text"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    placeholder="Postal Code"
+                    required
+                    style={{ ...inputStyle, flex: 1 }}
+                  />
+                </div>
+                <input
+                  type="tel"
+                  value={phoneNo}
+                  onChange={(e) => setPhoneNo(e.target.value)}
+                  placeholder="Phone Number"
+                  required
+                  style={inputStyle}
+                />
+
+                <p style={{ fontSize: "0.78rem", color: "#64748B", marginTop: "14px", marginBottom: "8px", textAlign: "left" }}>
+                  After paying, enter your UPI Transaction Ref/ID to confirm:
+                </p>
                 <input
                   type="text"
                   value={upiId}
                   onChange={(e) => setUpiId(e.target.value)}
-                  placeholder="e.g. name@okaxis"
+                  placeholder="e.g. Transaction ID / UPI ID"
                   required
                   style={{
                     width: "100%", padding: "12px 16px", marginBottom: "12px",
