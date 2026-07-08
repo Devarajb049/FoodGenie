@@ -22,6 +22,7 @@ const Cart = () => {
   const [phoneNo, setPhoneNo] = React.useState("");
   const [showUpiModal, setShowUpiModal] = React.useState(false);
   const [payingUpi, setPayingUpi] = React.useState(false);
+  const [upiOption, setUpiOption] = React.useState("app");
 
   const inputStyle = {
     width: "100%",
@@ -430,24 +431,70 @@ const Cart = () => {
             <h3 style={{ fontWeight: "800", color: "#F1F5F9", fontSize: "1.3rem", marginBottom: "6px" }}>
               Pay via UPI
             </h3>
-            <p style={{ fontSize: "0.83rem", color: "#64748B", marginBottom: "24px" }}>
-              Opens your UPI app with the amount pre-filled
+            <p style={{ fontSize: "0.83rem", color: "#64748B", marginBottom: "20px" }}>
+              Select payment option below
             </p>
 
-            <a
-              href={`upi://pay?pa=bhojanapudevaraj-1@oksbi&pn=Payment&am=${finalTotal}&cu=INR`}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
-                width: "100%", padding: "16px",
-                background: "linear-gradient(135deg, #10B981, #059669)",
-                color: "white", fontWeight: "800", borderRadius: "14px",
-                textDecoration: "none", marginBottom: "20px",
-                boxShadow: "0 6px 20px rgba(16,185,129,0.3)",
-                fontSize: "1rem"
-              }}
-            >
-              🚀 Pay ₹{finalTotal} via UPI
-            </a>
+            {/* Toggle Payment Mode */}
+            <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" }}>
+              <button 
+                type="button"
+                onClick={() => setUpiOption("app")} 
+                style={{
+                  flex: 1, padding: "10px", borderRadius: "12px", border: "none",
+                  background: upiOption === "app" ? "rgba(255,87,34,0.15)" : "rgba(255,255,255,0.05)",
+                  color: upiOption === "app" ? "#FF7043" : "#94A3B8",
+                  fontWeight: "700", fontSize: "0.82rem", cursor: "pointer", transition: "all 0.2s"
+                }}
+              >
+                📱 UPI App
+              </button>
+              <button 
+                type="button"
+                onClick={() => setUpiOption("qr")} 
+                style={{
+                  flex: 1, padding: "10px", borderRadius: "12px", border: "none",
+                  background: upiOption === "qr" ? "rgba(255,87,34,0.15)" : "rgba(255,255,255,0.05)",
+                  color: upiOption === "qr" ? "#FF7043" : "#94A3B8",
+                  fontWeight: "700", fontSize: "0.82rem", cursor: "pointer", transition: "all 0.2s"
+                }}
+              >
+                🔍 QR Code
+              </button>
+            </div>
+
+            {upiOption === "app" ? (
+              <a
+                href={`upi://pay?pa=bhojanapudevaraj-1@oksbi&pn=FoodGenie&am=${finalTotal}&cu=INR`}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
+                  width: "100%", padding: "15px",
+                  background: "linear-gradient(135deg, #10B981, #059669)",
+                  color: "white", fontWeight: "800", borderRadius: "14px",
+                  textDecoration: "none", marginBottom: "20px",
+                  boxShadow: "0 6px 20px rgba(16,185,129,0.3)",
+                  fontSize: "0.95rem"
+                }}
+              >
+                🚀 Open UPI App (₹{finalTotal})
+              </a>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "20px" }}>
+                <div style={{
+                  background: "white", padding: "10px", borderRadius: "14px", 
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.2)", display: "inline-block"
+                }}>
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`upi://pay?pa=bhojanapudevaraj-1@oksbi&pn=FoodGenie&am=${finalTotal}&cu=INR`)}`}
+                    alt="UPI QR Code"
+                    style={{ width: "150px", height: "150px", display: "block" }}
+                  />
+                </div>
+                <p style={{ fontSize: "0.72rem", color: "#94A3B8", marginTop: "8px", lineHeight: "1.4" }}>
+                  Scan using GPay, PhonePe, Paytm, or BHIM
+                </p>
+              </div>
+            )}
 
             <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}>
               <form onSubmit={handleUpiPaymentSubmit}>

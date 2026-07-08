@@ -8,7 +8,7 @@ const dotenv = require("dotenv");
 
 //setting up config file
 dotenv.config({ path: "./config/config.env" });
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY ? require("stripe")(process.env.STRIPE_SECRET_KEY) : null;
 
 // Create a new order   =>  /api/v1/order/new
 exports.newOrder = catchAsyncErrors(async (req, res, next) => {
@@ -52,6 +52,9 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
 
   // Check if it's a Stripe session or direct UPI payment
   if (session_id && session_id.startsWith("cs_")) {
+    if (!stripe) {
+      return next(new ErrorHandler("Stripe payment gateway is not configured on this server.", 400));
+    }
     // Stripe checkout session flow
     const session = await stripe.checkout.sessions.retrieve(session_id, {
       expand: ["customer"],

@@ -4,13 +4,19 @@ const catchAsync = require("../middlewares/catchAsyncErrors");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./config/config.env" });
 
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY ? require("stripe")(process.env.STRIPE_SECRET_KEY) : null;
 
 console.log("KEY", process.env.STRIPE_SECRET_KEY);
 
 
 //process payment Api
 exports.processPayment = catchAsyncErrors(async (req, res, next) => {
+    if (!stripe) {
+        return res.status(500).json({
+            success: false,
+            message: "Stripe payment gateway is not configured on this server."
+        });
+    }
     console.log(req.body)
 
     //stripe checkout session
